@@ -1,3 +1,5 @@
 customtkinter
 Pillow
 psutil
+pywin32
+uiautomation

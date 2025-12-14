@@ -4,6 +4,7 @@ import os
 from threading import Thread
 import time
 from core.line_manager import LineManager
+from gui.debug_window import DebugWindow
 
 customtkinter.set_appearance_mode("Dark")
 customtkinter.set_default_color_theme(
@@ -99,6 +100,18 @@ class NLineApp(customtkinter.CTk):
         )
         self.cache_btn.grid(row=2, column=1, padx=10, pady=(0, 20), sticky="ew")
 
+        # Debug Tools
+        self.debug_btn = customtkinter.CTkButton(
+            self.content_frame,
+            text="Open Debug Tools",
+            command=self.open_debug_window,
+            fg_color="#34495e",
+            hover_color="#2c3e50",
+        )
+        self.debug_btn.grid(
+            row=3, column=0, columnspan=2, padx=10, pady=(10, 20), sticky="ew"
+        )
+
         # Future Mods Section
         self.separator = customtkinter.CTkLabel(
             self.content_frame,
@@ -127,9 +140,9 @@ class NLineApp(customtkinter.CTk):
 
         # Footer
         self.footer_label = customtkinter.CTkLabel(
-            self, text="v0.1.1 - Provisional Build", text_color="gray"
+            self.content_frame, text="N-LINE Manager v0.1.2", text_color="gray"
         )
-        self.footer_label.grid(row=2, column=0, pady=5)
+        self.footer_label.grid(row=8, column=0, pady=10)
 
         # Start Monitor Thread
         self.monitor_running = True
@@ -184,6 +197,17 @@ class NLineApp(customtkinter.CTk):
             os.startfile(path)
         else:
             self.log("Error: Could not find LINE installation folder.")
+
+    def open_debug_window(self):
+        if (
+            hasattr(self, "debug_window")
+            and self.debug_window is not None
+            and self.debug_window.winfo_exists()
+        ):
+            self.debug_window.focus()
+        else:
+            self.debug_window = DebugWindow(self)
+            self.debug_window.focus()
 
     def on_closing(self):
         self.monitor_running = False
