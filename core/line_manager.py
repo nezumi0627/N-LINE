@@ -130,3 +130,36 @@ class LineManager:
             return "Success: LINE launching..."
         except Exception as e:
             return f"Error launching LINE: {str(e)}"
+
+    @staticmethod
+    def relaunch_with_params(args: List[str]) -> str:
+        """
+        Kills LINE and restarts it with the given arguments.
+        """
+        LineManager.kill_line()
+        # Wait a bit for cleanup
+        import time
+
+        time.sleep(1)
+
+        # Find Executable
+        install_path = LineManager.get_install_path()
+        if not install_path:
+            return "Error: Could not find LINE installation path."
+
+        exe_path = os.path.join(install_path, "LineLauncher.exe")  # Or generic start
+        if not os.path.exists(exe_path):
+            # Try standard LINE.exe
+            exe_path = os.path.join(install_path, "LINE.exe")
+
+        if not os.path.exists(exe_path):
+            return "Error: LINE executable not found."
+
+        try:
+            import subprocess
+
+            cmd = [exe_path] + args
+            subprocess.Popen(cmd, cwd=install_path, shell=False)
+            return f"Restarted LINE with: {' '.join(args)}"
+        except Exception as e:
+            return f"Error launching LINE: {e}"

@@ -4,7 +4,7 @@
 ![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-windows-lightgrey.svg)
 ![Status](https://img.shields.io/badge/status-active-success.svg)
-![Version](https://img.shields.io/badge/version-v0.1.2-orange.svg)
+![Version](https://img.shields.io/badge/version-v0.2.0-orange.svg)
 
 > [English Version Here](README_EN.md)
 

@@ -1,0 +1,14 @@
+
+html, body, QWidget {
+    background-color: red !important;
+    background: red !important;
+    color: white !important;
+}
+QPushButton {
+    background-color: blue;
+    color: yellow;
+    border: 3px solid green;
+}
+* {
+    background-color: #ffcccc;
+}

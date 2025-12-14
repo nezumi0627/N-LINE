@@ -1,10 +1,115 @@
 import win32gui
 import win32process
 import uiautomation as auto
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+import time
+import threading
 
 
 class UIInspector:
+    @staticmethod
+    def get_element_at_cursor() -> Optional[auto.Control]:
+        """
+        Returns the UI Automation element under the mouse cursor.
+        """
+        try:
+            x, y = win32gui.GetCursorPos()
+            element = auto.ControlFromPoint(x, y)
+            return element
+        except Exception:
+            return None
+
+    @staticmethod
+    def highlight_element(element: auto.Control, duration: float = 1.0):
+        """
+        Draws a red rectangle around the element for a short duration using a transparent overlay window.
+        """
+        try:
+            rect = element.BoundingRectangle
+            if rect.right <= rect.left or rect.bottom <= rect.top:
+                return
+
+            def show_highlight():
+                import tkinter as tk
+
+                root = tk.Tk()
+
+                # Window settings for transparent overlay
+                root.overrideredirect(True)
+                root.attributes("-topmost", True)
+                root.attributes("-alpha", 0.7)  # Semi-transparent
+                root.attributes(
+                    "-transparentcolor", "white"
+                )  # White becomes fully transparent
+
+                # Calculate geometry
+                w = rect.right - rect.left
+                h = rect.bottom - rect.top
+                x = rect.left
+                y = rect.top
+
+                root.geometry(f"{w}x{h}+{x}+{y}")
+
+                # Create canvas relative to 0,0 since window is positioned at rect
+                canvas = tk.Canvas(
+                    root, width=w, height=h, bg="white", highlightthickness=0
+                )
+                canvas.pack(fill="both", expand=True)
+
+                # Draw red border
+                canvas.create_rectangle(0, 0, w - 1, h - 1, outline="red", width=3)
+
+                root.after(int(duration * 1000), root.destroy)
+                root.mainloop()
+
+            # Run in a separate thread to not block
+            t = threading.Thread(target=show_highlight)
+            t.start()
+
+        except Exception:
+            pass
+
+    @staticmethod
+    def get_detailed_info(element: auto.Control) -> Dict[str, Any]:
+        """
+        Extracts detailed properties from a UIA element for editing purposes.
+        """
+        if not element:
+            return {}
+
+        info = {
+            "Name": element.Name,
+            "ControlType": element.ControlTypeName,
+            "ClassName": element.ClassName,
+            "AutomationId": element.AutomationId,
+            "Rect": element.BoundingRectangle,
+            "ProcessId": element.ProcessId,
+            "Value": "",
+            "Patterns": [],
+        }
+
+        # Check patterns for editing capabilities
+        if element.GetPattern(auto.PatternId.ValuePattern):
+            info["Patterns"].append("Value")
+            try:
+                # Need to properly cast or access pattern interface
+                # For uiautomation python lib, typically we access current value via pattern
+                # simple approach:
+                if hasattr(element, "GetValuePattern"):
+                    p = element.GetValuePattern()
+                    if p:
+                        info["Value"] = p.Value
+            except:
+                pass
+
+        if element.GetPattern(auto.PatternId.InvokePattern):
+            info["Patterns"].append("Invoke (Clickable)")
+
+        if element.GetPattern(auto.PatternId.TogglePattern):
+            info["Patterns"].append("Toggle")
+
+        return info
+
     @staticmethod
     def get_extensive_ui_tree(pid: int) -> str:
         """

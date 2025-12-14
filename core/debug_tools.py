@@ -67,3 +67,50 @@ class DebugTools:
                     pass
 
         return paths
+
+    @staticmethod
+    def scan_for_resources() -> Dict[str, List[str]]:
+        """
+        Recursively scans LINE directories for potentially moddable resources.
+        Looking for: .qss (Qt Stylesheets), .css, .json (configs), .png (assets), .theme
+        """
+        targets = [".qss", ".css", ".json", ".theme", ".style"]
+        found_resources = {}
+
+        search_paths = []
+
+        # 1. Install Path
+        install_path = LineManager.get_install_path()
+        if install_path:
+            search_paths.append(("Install Dir", install_path))
+
+        # 2. Data Path
+        user_profile = os.environ.get("USERPROFILE")
+        if user_profile:
+            data_path = os.path.join(user_profile, "AppData", "Local", "LINE")
+            search_paths.append(("Data Dir", data_path))
+
+        for label, root_path in search_paths:
+            if not os.path.exists(root_path):
+                continue
+
+            found_resources[label] = []
+            try:
+                # Walk with limit to avoid scanning deep caches too much
+                for root, dirs, files in os.walk(root_path):
+                    # Skip heavy cache folders
+                    if "Cache" in root or "logs" in root.lower():
+                        continue
+
+                    for file in files:
+                        ext = os.path.splitext(file)[1].lower()
+                        if ext in targets:
+                            # Verify if it looks interesting (skip minified huge jsons maybe? keep for now)
+                            full_path = os.path.join(root, file)
+                            # Store relative path for readability
+                            rel_path = os.path.relpath(full_path, root_path)
+                            found_resources[label].append(rel_path)
+            except Exception as e:
+                found_resources[label].append(f"Error scanning: {e}")
+
+        return found_resources

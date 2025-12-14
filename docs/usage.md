@@ -7,38 +7,51 @@
 - Python 3.11 以上
 - LINE デスクトップ版アプリがインストールされていること
 
-### 初回セットアップ
-1. リポジトリをクローンするか、ソースコードをダウンロードします。
-2. `run.bat` を実行して、自動的に仮想環境 (`venv`) のセットアップと依存関係 (`requirements.txt`) のインストールを行います。
-   ```powershell
-   ./run.bat
-   ```
+### クイックスタート
+1. `run.bat` をダブルクリックして起動します。
+   - 初回起動時に自動的に仮想環境 (`venv`) が構築され、必要なライブラリ (`uiautomation`, `customtkinter` 等) がインストールされます。
 
-## アプリケーションの実行
+---
 
-プロジェクトのルートディレクトリにある `run.bat` をダブルクリックします。これにより以下の処理が行われます：
-1. Python仮想環境を有効化（アクティベート）します。
-2. `N-LINE` GUIを起動します。
+## 🚀 高度な使用方法 (Advanced Usage)
 
-## インターフェースの使い方
+### 1. UI Inspector Mode (Spy Mode) の使い方
+LINEの内部構造（ボタンのIDや構造）を調査するための機能です。
+
+1. **Debug Tools** を開き、**"UI Inspector"** タブを選択します。
+2. **"Inspector Mode (Ctrl+Shift to Spy)"** スイッチを **ON** にします。
+3. LINEのウィンドウ上にマウスカーソルを持っていきます。
+4. キーボードの **`Ctrl`** と **`Shift`** を同時に押します。
+5. ポイントしている要素が**赤い枠**で一瞬ハイライトされ、Debugウィンドウに詳細情報が表示されます。
+
+### 2. Arg Injection による UI カスタマイズ (Revolution)
+LINEの見た目をCSS (Qt Stylesheet / .qss) で強制的に変更する機能です。
+
+#### 準備
+適用したいデザインを記述した `.qss` ファイルを作成します。
+（サンプルとして `test_style.qss` がプロジェクトルートに生成されています）
+
+このファイルを、LINEがアクセス可能な以下のフォルダのいずれかにコピーすることをお勧めします：
+- `%USERPROFILE%\AppData\Local\LINE\bin\current\`
+
+#### 実行手順
+1. **Debug Tools** を開き、**"Window Mods"** タブを選択します。
+2. 一番下の **"Arg Injection (Relaunch)"** 欄を探します。
+3. 入力欄に引数を入力します。
+   - 例: `-stylesheet test_style.qss`
+   - フルパス例: `-stylesheet "C:\Path\To\Your\style.qss"`
+4. **"Relaunch with Args"** ボタンをクリックします。
+5. LINEが再起動し、指定したスタイルが適用されます。
+
+---
+
+## 基本操作
 
 ### メインダッシュボード
-- **モニター**: 左上のインジケーターで状態を確認します。
-- **アクション**: ボタンをクリックして、プロセス終了 (Kill)、キャッシュ削除 (Clear Cache)、LINE起動 (Launch) を行います。
-- **ログ**: 下部のテキストエリアで操作履歴を確認できます。
+- **Kill Process**: LINEを強制終了します。
+- **Clear Cache**: キャッシュ（画像や一時ファイル）を削除し、動作を軽くします。
+- **Launch LINE**: LINEを起動します。
 
-### デバッグ & Mod機能
-1. メインウィンドウ下部の **"Open Debug Tools"** をクリックします。
-2. **Process Info**: "Refresh" をクリックして現在のメモリ/CPU使用率を確認します。
-3. **UI Inspector**: 
-   - "Scan Top Windows" で概要を素早く確認します。
-   - "Deep Scan" で全UI要素の詳細ツリーを確認します（数秒かかります）。
-4. **Window Mods**:
-   - まず **"Find Main Window"** をクリックして、実行中のLINEプロセスをロックします。
-   - スライダーを使って透明度 (Opacity) を変更します。
-   - "Always on Top" スイッチを切り替えます。
-   - テキストを入力して "Set Title" をクリックし、ウィンドウ名を変更します。
-5. **Automation**:
-   - LINEでチャットルームが開いていることを確認してください。
-   - 入力ボックスにテキストを入力し "Type Text" をクリックします。
-   - "Send 'Enter' Key" をクリックしてメッセージを送信します。
+### Debug & Mods
+- **Opacity / Topmost**: ウィンドウの透明化や最前面固定を行います。
+- **Automation**: チャット画面が開いている状態で、テキスト送信のテストを行えます。

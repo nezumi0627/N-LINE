@@ -140,7 +140,7 @@ class NLineApp(customtkinter.CTk):
 
         # Footer
         self.footer_label = customtkinter.CTkLabel(
-            self.content_frame, text="N-LINE Manager v0.1.2", text_color="gray"
+            self.content_frame, text="N-LINE Manager v0.2.0", text_color="gray"
         )
         self.footer_label.grid(row=8, column=0, pady=10)
 

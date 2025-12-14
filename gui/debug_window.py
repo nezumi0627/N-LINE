@@ -4,6 +4,8 @@ from core.ui_inspector import UIInspector
 from core.line_manager import LineManager
 from core.window_manipulator import WindowManipulator
 from core.automation_manager import AutomationManager
+import keyboard
+import threading
 import json
 import datetime
 
@@ -56,7 +58,7 @@ class DebugWindow(customtkinter.CTkToplevel):
         self.scan_btn = customtkinter.CTkButton(
             self.tab_files, text="Scan Directories", command=self.scan_files
         )
-        self.scan_btn.grid(row=1, column=0, pady=10)
+        self.scan_btn.grid(row=1, column=0, pady=(10, 5), padx=5, sticky="ew")
 
         # --- UI Inspector Tab ---
         self.tab_ui.grid_columnconfigure(0, weight=1)
@@ -82,6 +84,25 @@ class DebugWindow(customtkinter.CTkToplevel):
             hover_color="#9b59b6",
         )
         self.inspect_deep_btn.grid(row=1, column=1, pady=10, padx=(10, 0), sticky="w")
+
+        # --- Point-to-Inspect Features ---
+        self.inspector_frame = customtkinter.CTkFrame(self.tab_ui)
+        self.inspector_frame.grid(
+            row=2, column=0, columnspan=2, sticky="ew", padx=5, pady=5
+        )
+        self.inspector_frame.grid_columnconfigure(1, weight=1)
+
+        self.inspector_switch = customtkinter.CTkSwitch(
+            self.inspector_frame,
+            text="Inspector Mode (Ctrl+Shift to Spy)",
+            command=self.toggle_inspector_mode,
+        )
+        self.inspector_switch.grid(row=0, column=0, padx=10, pady=5)
+
+        self.inspector_status = customtkinter.CTkLabel(
+            self.inspector_frame, text="OFF", text_color="gray"
+        )
+        self.inspector_status.grid(row=0, column=1, padx=10, sticky="w")
 
         self.tab_ui.grid_columnconfigure(0, weight=1)
         self.tab_ui.grid_columnconfigure(1, weight=1)
@@ -139,6 +160,28 @@ class DebugWindow(customtkinter.CTkToplevel):
             self.controls_frame, text="Set Title", command=self.set_window_title
         )
         self.title_btn.grid(row=4, column=0, padx=20, pady=5)
+
+        # --- Advanced: Relaunch with Args ---
+        self.adv_label = customtkinter.CTkLabel(
+            self.controls_frame,
+            text="Arg Injection (Relaunch)",
+            font=customtkinter.CTkFont(size=12, weight="bold"),
+        )
+        self.adv_label.grid(row=5, column=0, pady=(15, 0))
+
+        self.args_entry = customtkinter.CTkEntry(
+            self.controls_frame, placeholder_text="e.g. -stylesheet test_style.qss"
+        )
+        self.args_entry.grid(row=6, column=0, padx=20, pady=5, sticky="ew")
+
+        self.relaunch_btn = customtkinter.CTkButton(
+            self.controls_frame,
+            text="Relaunch with Args",
+            command=self.relaunch_line,
+            fg_color="#c0392b",
+            hover_color="#e74c3c",
+        )
+        self.relaunch_btn.grid(row=7, column=0, padx=20, pady=5)
 
         self.target_hwnd = 0
 
@@ -262,6 +305,67 @@ class DebugWindow(customtkinter.CTkToplevel):
         self.ui_textbox.insert("end", report)
         self.ui_textbox.configure(state="disabled")
 
+    def toggle_inspector_mode(self):
+        if self.inspector_switch.get():
+            self.inspector_status.configure(
+                text="ON (Monitoring 'ctrl+shift')", text_color="green"
+            )
+            keyboard.add_hotkey("ctrl+shift", self.on_inspector_hotkey)
+        else:
+            self.inspector_status.configure(text="OFF", text_color="gray")
+            try:
+                keyboard.remove_hotkey("ctrl+shift")
+            except:
+                pass
+
+    def on_inspector_hotkey(self):
+        # Run inspection in a separate thread to avoid freezing key hook
+        # Simple throttling: check if we are already inspecting or just spamming
+        if hasattr(self, "_inspecting") and self._inspecting:
+            return
+        self._inspecting = True
+        threading.Thread(target=self._run_point_inspection).start()
+
+    def _run_point_inspection(self):
+        import uiautomation as auto
+
+        try:
+            # Need to initialize COM for this thread
+            with auto.UIAutomationInitializerInThread(debug=False):
+                try:
+                    element = UIInspector.get_element_at_cursor()
+                    if not element:
+                        return
+
+                    details = UIInspector.get_detailed_info(element)
+                    UIInspector.highlight_element(element)
+
+                    # Format output
+                    report = f"\n--- SPY RESULT ({datetime.datetime.now().strftime('%H:%M:%S')}) ---\n"
+                    report += f"Name: {details.get('Name')}\n"
+                    report += f"Type: {details.get('ControlType')}\n"
+                    report += f"Class: {details.get('ClassName')}\n"
+                    report += f"AutoID: {details.get('AutomationId')}\n"
+                    report += f"Process: {details.get('ProcessId')}\n"
+                    report += f"Rect: {details.get('Rect')}\n"
+                    report += f"Patterns: {', '.join(details.get('Patterns'))}\n"
+                    if details.get("Value"):
+                        report += f"Value: {details.get('Value')}\n"
+
+                    # Write to textbox safely
+                    self.after(0, lambda: self._update_ui_textbox(report))
+                except Exception as e:
+                    # Log if needed, or silently fail on COM error during heavy load
+                    pass
+        finally:
+            self._inspecting = False
+
+    def _update_ui_textbox(self, text):
+        self.ui_textbox.configure(state="normal")
+        self.ui_textbox.insert("end", text)
+        self.ui_textbox.see("end")
+        self.ui_textbox.configure(state="disabled")
+
     def inspect_deep_ui(self):
         """
         Performs a deep scan using UI Automation to find internal controls.
@@ -342,6 +446,50 @@ class DebugWindow(customtkinter.CTkToplevel):
             new_title = self.title_entry.get()
             if new_title:
                 WindowManipulator.set_title(self.target_hwnd, new_title)
+
+    def relaunch_line(self):
+        args_text = self.args_entry.get()
+        if not args_text:
+            return
+
+        # If user typed just a qss filename, assume it's the one we just copied
+        if args_text.endswith(".qss") and "Users" not in args_text:
+            # Construct path to where we copied it (LINE/bin/current usually works best for execution context)
+            import os
+
+            user_profile = os.environ.get("USERPROFILE")
+            # Try targeting the one in bin/current first
+            target_qss = os.path.join(
+                user_profile,
+                "AppData",
+                "Local",
+                "LINE",
+                "bin",
+                "current",
+                args_text.strip().replace("-stylesheet ", ""),
+            )
+
+            # If argument didn't have -stylesheet, add it
+            if "-stylesheet" not in args_text:
+                args_text = f'-stylesheet "{target_qss}"'
+            else:
+                # replace filename with full path
+                pass
+
+        # Parse args roughly
+        import shlex
+
+        # Handle quotes manually if needed, but shlex is okay
+        # For simplicity, if we constructed the string above, listify it
+        if "stylesheet" in args_text:
+            # Manual split to keep quotes
+            args = ["-stylesheet", args_text.split('"', 1)[1].replace('"', "")]
+        else:
+            args = shlex.split(args_text)
+
+        # Call manager
+        result = LineManager.relaunch_with_params(args)
+        self.status_mod_label.configure(text=result, text_color="blue")
 
     # --- Automation Handlers ---
 

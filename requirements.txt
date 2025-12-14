@@ -3,3 +3,5 @@ Pillow
 psutil
 pywin32
 uiautomation
+keyboard
+mouse
