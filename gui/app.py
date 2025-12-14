@@ -127,7 +127,7 @@ class NLineApp(customtkinter.CTk):
 
         # Footer
         self.footer_label = customtkinter.CTkLabel(
-            self, text="v0.1.0 - Provisional Build", text_color="gray"
+            self, text="v0.1.1 - Provisional Build", text_color="gray"
         )
         self.footer_label.grid(row=2, column=0, pady=5)
 
