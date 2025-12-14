@@ -63,6 +63,15 @@ class NLineApp(customtkinter.CTk):
         self.status_label.pack(pady=10)
 
         # Actions
+        self.launch_btn = customtkinter.CTkButton(
+            self.content_frame,
+            text="Launch LINE",
+            command=self.launch_line_action,
+            fg_color="#27ae60",
+            hover_color="#2ecc71",
+        )
+        self.launch_btn.grid(row=1, column=0, padx=10, pady=20, sticky="ew")
+
         self.kill_btn = customtkinter.CTkButton(
             self.content_frame,
             text="Kill LINE Process",
@@ -70,16 +79,7 @@ class NLineApp(customtkinter.CTk):
             fg_color="#c0392b",
             hover_color="#e74c3c",
         )
-        self.kill_btn.grid(row=1, column=0, padx=10, pady=20, sticky="ew")
-
-        self.cache_btn = customtkinter.CTkButton(
-            self.content_frame,
-            text="Clear Cache",
-            command=self.clear_cache_action,
-            fg_color="#d35400",
-            hover_color="#e67e22",
-        )
-        self.cache_btn.grid(row=1, column=1, padx=10, pady=20, sticky="ew")
+        self.kill_btn.grid(row=1, column=1, padx=10, pady=20, sticky="ew")
 
         self.folder_btn = customtkinter.CTkButton(
             self.content_frame,
@@ -88,9 +88,16 @@ class NLineApp(customtkinter.CTk):
             fg_color="#8e44ad",
             hover_color="#9b59b6",
         )
-        self.folder_btn.grid(
-            row=2, column=0, columnspan=2, padx=10, pady=(0, 20), sticky="ew"
+        self.folder_btn.grid(row=2, column=0, padx=10, pady=(0, 20), sticky="ew")
+
+        self.cache_btn = customtkinter.CTkButton(
+            self.content_frame,
+            text="Clear Cache",
+            command=self.clear_cache_action,
+            fg_color="#d35400",
+            hover_color="#e67e22",
         )
+        self.cache_btn.grid(row=2, column=1, padx=10, pady=(0, 20), sticky="ew")
 
         # Future Mods Section
         self.separator = customtkinter.CTkLabel(
@@ -157,6 +164,9 @@ class NLineApp(customtkinter.CTk):
             self.log("Success: LINE process terminated.")
         else:
             self.log("Info: LINE was not running or could not be killed.")
+
+    def launch_line_action(self):
+        self.log(LineManager.launch_line())
 
     def clear_cache_action(self):
         self.log("Clearing LINE cache...")
