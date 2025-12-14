@@ -84,31 +84,6 @@ class ModsTab(customtkinter.CTkFrame):
         )
         self.relaunch_btn.grid(row=7, column=0, padx=20, pady=5)
 
-        # --- Debug Port Checker ---
-        self.debug_port_frame = customtkinter.CTkFrame(
-            self.controls_frame, fg_color="transparent"
-        )
-        self.debug_port_frame.grid(row=8, column=0, padx=20, pady=(15, 5), sticky="ew")
-
-        self.port_label = customtkinter.CTkLabel(self.debug_port_frame, text="Port:")
-        self.port_label.pack(side="left", padx=(0, 5))
-
-        self.port_entry = customtkinter.CTkEntry(
-            self.debug_port_frame, width=60, placeholder_text="8080"
-        )
-        self.port_entry.pack(side="left")
-        self.port_entry.insert(0, "8080")
-
-        self.check_port_btn = customtkinter.CTkButton(
-            self.debug_port_frame,
-            text="Scan /json",
-            width=100,
-            command=self.check_debug_port,
-            fg_color="#27ae60",
-            hover_color="#2ecc71",
-        )
-        self.check_port_btn.pack(side="left", padx=10)
-
     def find_window_target(self):
         # Improved: Find by PID first, which is more robust than title search
         procs = LineManager.get_line_processes()
