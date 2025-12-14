@@ -1,44 +1,44 @@
-# N-LINE Usage Guide
+# N-LINE 利用ガイド
 
-## Installation & Setup
+## インストールとセットアップ
 
-### Prerequisites
-- Windows 10 or 11
-- Python 3.11 or higher
-- LINE Desktop Application installed
+### 前提条件
+- Windows 10 または 11
+- Python 3.11 以上
+- LINE デスクトップ版アプリがインストールされていること
 
-### First Time Setup
-1. Clone the repository or download the source code.
-2. Run `run.bat` to automatically set up the virtual environment (`venv`) and install dependencies (`requirements.txt`).
+### 初回セットアップ
+1. リポジトリをクローンするか、ソースコードをダウンロードします。
+2. `run.bat` を実行して、自動的に仮想環境 (`venv`) のセットアップと依存関係 (`requirements.txt`) のインストールを行います。
    ```powershell
    ./run.bat
    ```
 
-## Running the Application
+## アプリケーションの実行
 
-Double-click `run.bat` in the project root directory. This will:
-1. Activate the Python virtual environment.
-2. Launch the `N-LINE` GUI.
+プロジェクトのルートディレクトリにある `run.bat` をダブルクリックします。これにより以下の処理が行われます：
+1. Python仮想環境を有効化（アクティベート）します。
+2. `N-LINE` GUIを起動します。
 
-## Using the Interface
+## インターフェースの使い方
 
-### Main Dashboard
-- **Monitor**: Check the top-left indicator for status.
-- **Actions**: Click buttons to Kill Process, Clear Cache, or Launch LINE.
-- **Logs**: View the operation history in the bottom text area.
+### メインダッシュボード
+- **モニター**: 左上のインジケーターで状態を確認します。
+- **アクション**: ボタンをクリックして、プロセス終了 (Kill)、キャッシュ削除 (Clear Cache)、LINE起動 (Launch) を行います。
+- **ログ**: 下部のテキストエリアで操作履歴を確認できます。
 
-### Debug & Mods
-1. Click **"Open Debug Tools"** at the bottom of the main window.
-2. **Process Info**: Click "Refresh" to see current memory/CPU usage.
+### デバッグ & Mod機能
+1. メインウィンドウ下部の **"Open Debug Tools"** をクリックします。
+2. **Process Info**: "Refresh" をクリックして現在のメモリ/CPU使用率を確認します。
 3. **UI Inspector**: 
-   - "Scan Top Windows" for a quick overview.
-   - "Deep Scan" for a detailed tree of all UI elements (takes a few seconds).
+   - "Scan Top Windows" で概要を素早く確認します。
+   - "Deep Scan" で全UI要素の詳細ツリーを確認します（数秒かかります）。
 4. **Window Mods**:
-   - First, click **"Find Main Window"** to lock onto the running LINE process.
-   - Use the slider to change Opacity.
-   - Toggle "Always on Top" switch.
-   - Enter text and click "Set Title" to rename the window.
+   - まず **"Find Main Window"** をクリックして、実行中のLINEプロセスをロックします。
+   - スライダーを使って透明度 (Opacity) を変更します。
+   - "Always on Top" スイッチを切り替えます。
+   - テキストを入力して "Set Title" をクリックし、ウィンドウ名を変更します。
 5. **Automation**:
-   - Ensure a chat room is open in LINE.
-   - Type text in the input box and click "Type Text".
-   - Click "Send 'Enter' Key" to send the message.
+   - LINEでチャットルームが開いていることを確認してください。
+   - 入力ボックスにテキストを入力し "Type Text" をクリックします。
+   - "Send 'Enter' Key" をクリックしてメッセージを送信します。

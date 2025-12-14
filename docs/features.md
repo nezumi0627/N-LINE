@@ -1,53 +1,53 @@
-# N-LINE Features Documentation
+# N-LINE 機能ドキュメント
 
-## 1. Core Features (Dashboard)
+## 1. コア機能 (ダッシュボード)
 
-### Status Monitor
-- **Description**: Real-time display of LINE's running status.
-- **Indicator**: Shows "APP RUNNING" in green or "STOPPED" in red.
-- **Mechanism**: Polls the process list every 2 seconds via a background thread using `psutil`.
+### ステータスモニター
+- **説明**: LINEの実行状態をリアルタイムで表示します。
+- **インジケーター**: 緑色で「APP RUNNING」、または赤色で「STOPPED」と表示します。
+- **仕組み**: バックグラウンドスレッドで `psutil` を使用して2秒ごとにプロセスリストをポーリングします。
 
-### Process Killer
-- **Description**: Forcefully terminates the LINE application and its associated processes.
-- **Use Case**: Useful when LINE freezes, becomes unresponsive, or needs a hard restart.
+### プロセスキラー
+- **説明**: LINEアプリケーションとその関連プロセスを強制終了します。
+- **ユースケース**: LINEがフリーズしたり、応答しなくなったり、完全な再起動が必要な場合に役立ちます。
 
-### Cache Cleaner
-- **Description**: Safely removes temporary cache files to free up disk space and resolve loading issues.
-- **Constraint**: Only works when LINE is not running (prevents file lock errors).
-- **Target**: Clears contents of `%USERPROFILE%\AppData\Local\LINE\Data\Cache`.
+### キャッシュクリーナー
+- **説明**: 一時キャッシュファイルを安全に削除し、ディスク容量を空け、読み込みの問題を解決します。
+- **制約**: LINEが実行されていないときのみ動作します（ファイルロックエラーを防ぐため）。
+- **対象**: `%USERPROFILE%\AppData\Local\LINE\Data\Cache` の内容を消去します。
 
-### Launch LINE
-- **Description**: Starts the LINE application if it is currently stopped.
-- **Smart Detection**: automatically searches for the executable in standard installation paths (`LineLauncher.exe`, `LINE.exe`).
+### LINE起動
+- **説明**: LINEが現在停止している場合、アプリケーションを起動します。
+- **スマート検出**: 標準的なインストールパスにある実行ファイル（`LineLauncher.exe`, `LINE.exe`）を自動的に検索します。
 
-### Open Install Folder
-- **Description**: Opens the LINE installation directory in Windows Explorer for manual inspection.
+### インストールフォルダを開く
+- **説明**: WindowsエクスプローラーでLINEのインストールディレクトリを開き、手動で調査できるようにします。
 
-## 2. Backup & Tools
+## 2. バックアップとツール
 
-### User Data Backup
-- **Description**: Creates a backup of the user's LINE data (chats, settings, etc.) excluding the heavy cache folder.
-- **Destination**: Backup is saved to `backups/line_backup_YYYYMMDD_HHMMSS`.
+### ユーザーデータバックアップ
+- **説明**: 巨大なキャッシュフォルダを除外して、ユーザーのLINEデータ（チャット、設定など）のバックアップを作成します。
+- **保存先**: バックアップは `backups/line_backup_YYYYMMDD_HHMMSS` に保存されます。
 
-## 3. Debug Tools & Engineering
-*Accessible via the "Open Debug Tools" button.*
+## 3. デバッグツール & エンジニアリング
+*メインウィンドウ下部の「Open Debug Tools」ボタンからアクセス可能です。*
 
-### Process Info
-- **Details**: Displays system information (OS, Python version) and detailed metrics for the LINE process (PID, Memory Usage, CPU Usage, Command Line Arguments).
+### プロセス情報 (Process Info)
+- **詳細**: システム情報（OS、Pythonバージョン）と、LINEプロセスの詳細メトリクス（PID、メモリ使用量、CPU使用率、コマンドライン引数）を表示します。
 
-### File Structure
-- **Details**: Lists files in the LINE installation directory and the local data folder. Useful for understanding the file layout.
+### ファイル構造 (File Structure)
+- **詳細**: LINEのインストールディレクトリとローカルデータフォルダ内のファイルをリストアップします。ファイル配置を理解するのに役立ちます。
 
-### UI Inspector
-- **Standard Scan**: Lists top-level windows belonging to the LINE process using Win32 API. Shows Class Name, Window Title, Visibility, and Size.
-- **Deep Scan (UIA)**: Uses Microsoft UI Automation to crawl the entire UI tree. Can identify internal buttons, input fields, pane controls, and their internal IDs (`AutomationId`). This is critical for developing advanced mods or automation scripts.
+### UIインスペクター (UI Inspector)
+- **標準スキャン (Scan Top Windows)**: Win32 APIを使用してLINEプロセスに属するトップレベルウィンドウをリストアップします。クラス名、ウィンドウタイトル、可視性、サイズを表示します。
+- **ディープスキャン (Deep Scan UIA)**: Microsoft UI Automationを使用してUIツリー全体をクロールします。内部ボタン、入力フィールド、ペインコントロール、およびそれらの内部ID (`AutomationId`) を特定できます。これは高度なModや自動化スクリプトの開発に不可欠です。
 
-### Window Mods (Experimental)
-- **Opacity Control**: Adjust the transparency of the LINE main window in real-time.
-- **Always on Top**: Toggles the "Topmost" state, keeping LINE above all other windows.
-- **Title Hijack**: Changes the window title text (e.g., from "LINE" to "N-LINE").
-- **Targeting**: Uses Process ID (PID) targeting to ensure the correct window is manipulated even if the title changes.
+### ウィンドウ操作 (Window Mods - 実験的機能)
+- **透明度制御 (Opacity)**: LINEメインウィンドウの透明度をリアルタイムで調整します。
+- **常に手前に表示 (Always on Top)**: 「最前面」状態を切り替え、他のすべてのウィンドウの上にLINEを表示し続けます。
+- **タイトルハイジャック (Set Title)**: ウィンドウのタイトルテキストを変更します（例：「LINE」から「N-LINE」へ）。
+- **ターゲティング**: タイトルが変更されても正しいウィンドウを操作できるように、プロセスID (PID) ターゲティングを使用します。
 
-### Automation (Experimental)
-- **Type Text**: Injects text directly into the chat input area (`AutoSuggestTextArea`) without using the clipboard.
-- **Send Enter**: Simulates pressing the Enter key to send messages programmatically.
+### 自動化 (Automation - 実験的機能)
+- **テキスト入力 (Type Text)**: クリップボードを使用せずに、チャット入力エリア (`AutoSuggestTextArea`) に直接テキストを注入します。
+- **エンター送信 (Send Enter)**: プログラムでEnterキーを押す操作をシミュレートしてメッセージを送信します。
