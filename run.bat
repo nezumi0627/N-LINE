@@ -1,4 +1,3 @@
 @echo off
-call venv\Scripts\activate
-python main.py
+rye run python -m n_line
 pause

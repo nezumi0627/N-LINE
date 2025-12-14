@@ -1,57 +1,41 @@
-# N-LINE 機能ドキュメント
+# N-LINE Features Index
 
-## 1. コア機能 (ダッシュボード)
+N-LINEが提供する機能の詳細ドキュメントへのインデックスです。
 
-### ステータスモニター
-- **説明**: LINEの実行状態をリアルタイムで表示します。
-- **インジケーター**: 緑色で「APP RUNNING」、または赤色で「STOPPED」と表示します。
-- **仕組み**: バックグラウンドスレッドで `psutil` を使用して2秒ごとにプロセスリストをポーリングします。
+## 機能一覧
 
-### プロセスキラー
-- **説明**: LINEアプリケーションとその関連プロセスを強制終了します。
-- **ユースケース**: LINEがフリーズしたり、応答しなくなったり、完全な再起動が必要な場合に役立ちます。
+### 🛠 Core Functions (Dashboard)
+メイン画面で利用できるプロセス管理・メンテナンス機能です。
+- [詳細ドキュメント: Core Functions](features/core_functions.md)
+  - Status Monitor
+  - Kill Process
+  - Clear Cache
+  - Launcher
 
-### キャッシュクリーナー
-- **説明**: 一時キャッシュファイルを安全に削除し、ディスク容量を空け、読み込みの問題を解決します。
-- **制約**: LINEが実行されていないときのみ動作します（ファイルロックエラーを防ぐため）。
-- **対象**: `%USERPROFILE%\AppData\Local\LINE\Data\Cache` の内容を消去します。
+### 🕵️ UI Inspector (Spy Mode)
+LINEの内部構造を解析するための強力なデバッグツールです。v0.2.0で**Spy Mode**が追加されました。
+- [詳細ドキュメント: UI Inspector](features/ui_inspector.md)
+  - Point-to-Inspect (Spy Mode)
+  - Deep Scan
+  - Automation ID解析
 
-### LINE起動
-- **説明**: LINEが現在停止している場合、アプリケーションを起動します。
-- **スマート検出**: 標準的なインストールパスにある実行ファイル（`LineLauncher.exe`, `LINE.exe`）を自動的に検索します。
+### 🎨 Visual Style Injection (QSS) ✨
+LINEの見た目（背景色、フォント、ボタンなど）をCSSライクな構文で自由にカスタマイズします。
+- [詳細ドキュメント: QSS Injection](features/qss_injection.md)
+  - QSSの適用方法
+  - スタイル例
 
-### インストールフォルダを開く
-- **説明**: WindowsエクスプローラーでLINEのインストールディレクトリを開き、手動で調査できるようにします。
+### 🪟 Window Mods
+ウィンドウ自体の制御を行います。
+- [詳細ドキュメント: Window Mods](features/window_mods.md)
+  - Opacity Control
+  - Always on Top
 
-## 2. バックアップとツール
+### 🤖 Automation (Experimental)
+チャット操作を自動化するための実験的機能です。
+- [詳細ドキュメント: Automation](features/automation.md)
+  - Text Injection
+  - Send Key Simulation
 
-### ユーザーデータバックアップ
-- **説明**: 巨大なキャッシュフォルダを除外して、ユーザーのLINEデータ（チャット、設定など）のバックアップを作成します。
-- **保存先**: バックアップは `backups/line_backup_YYYYMMDD_HHMMSS` に保存されます。
-
-## 3. デバッグツール & エンジニアリング
-*メインウィンドウ下部の「Open Debug Tools」ボタンからアクセス可能です。*
-
-### プロセス情報 (Process Info)
-- **詳細**: システム情報（OS、Pythonバージョン）と、LINEプロセスの詳細メトリクス（PID、メモリ使用量、CPU使用率、コマンドライン引数）を表示します。
-
-### ファイル構造 (File Structure)
-- **File Scan**: LINEディレクトリのファイル構造を表示します。ファイル配置を理解するのに役立ちます。
-
-### UIインスペクター (UI Inspector) - Point-to-Inspect
-- **標準スキャン (Scan Top Windows)**: トップレベルウィンドウの基本情報を取得します。
-- **ディープスキャン (Deep Scan UIA)**: 全UIツリーを取得します。
-- **Inspector Mode (Spy Mode)**: **[NEW]**
-    - スイッチをONにすると「Spyモード」になります。
-    - LINE上の任意の要素にカーソルを合わせ、**`Ctrl` + `Shift`** を押すと、その要素を**赤枠でハイライト**し、詳細情報（Class, AutomationId, Rect）を即座に表示します。
-    - デッドロック防止・スロットリング機能付き。
-
-### ウィンドウ操作 (Window Mods)
-- **透明度・最前面**: ウィンドウの表示状態を操作します。
-- **Arg Injection (起動引数注入)**: **[Revolutionary Feature]**
-    - LINEアプリを一度終了し、**任意のコマンドライン引数を付与して再起動**します。
-    - **活用例**: `-stylesheet test_style.qss` を指定することで、外部CSSファイルを読み込ませ、**LINEのUI（色、フォント、背景）を完全に書き換える**ことが可能です。
-
-### 自動化 (Automation)
-- **テキスト入力 (Type Text)**: クリップボードを使用せずに、チャット入力エリア (`AutoSuggestTextArea`) に直接テキストを注入します。
-- **エンター送信 (Send Enter)**: プログラムでEnterキーを押す操作をシミュレートしてメッセージを送信します。
+---
+_Last Updated: 2025-12-14 (v0.2.0)_

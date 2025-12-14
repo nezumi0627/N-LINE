@@ -1,5 +1,4 @@
 import uiautomation as auto
-import time
 from typing import Optional
 
 

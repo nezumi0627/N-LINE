@@ -2,7 +2,6 @@ import win32gui
 import win32process
 import uiautomation as auto
 from typing import List, Dict, Any, Optional
-import time
 import threading
 
 
@@ -92,14 +91,10 @@ class UIInspector:
         if element.GetPattern(auto.PatternId.ValuePattern):
             info["Patterns"].append("Value")
             try:
-                # Need to properly cast or access pattern interface
-                # For uiautomation python lib, typically we access current value via pattern
-                # simple approach:
-                if hasattr(element, "GetValuePattern"):
-                    p = element.GetValuePattern()
-                    if p:
-                        info["Value"] = p.Value
-            except:
+                p = element.GetValuePattern()
+                if p:
+                    info["Value"] = p.Value
+            except Exception:
                 pass
 
         if element.GetPattern(auto.PatternId.InvokePattern):
@@ -108,7 +103,81 @@ class UIInspector:
         if element.GetPattern(auto.PatternId.TogglePattern):
             info["Patterns"].append("Toggle")
 
+        # --- Advanced: Retrieve LegacyIAccessible (Crucial for Qt Apps) ---
+        # Qt often hides real object names in LegacyIAccessible properties
+        if element.GetPattern(auto.PatternId.LegacyIAccessiblePattern):
+            info["Patterns"].append("LegacyIAccessible")
+            try:
+                legacy = element.GetLegacyIAccessiblePattern()
+                if legacy:
+                    info["LegacyName"] = legacy.Name
+                    info["LegacyDescription"] = legacy.Description
+                    info["LegacyValue"] = legacy.Value
+                    info["LegacyRole"] = legacy.Role
+                    # Sometimes Description holds the objectName or class info
+            except Exception:
+                pass
+
+        # --- Hierarchy: Ancestors ---
+        # Walk up to find the container context (e.g. ChatPanel -> LcWidget)
+        ancestors = []
+        try:
+            parent = element.GetParentControl()
+            depth = 0
+            while parent and depth < 5:  # Limit depth
+                name = parent.Name if parent.Name else "NoName"
+                cls = parent.ClassName if parent.ClassName else "NoClass"
+                ancestors.append(f"{cls}('{name}')")
+
+                # Check for PID mismatch (hit desktop)
+                if parent.ProcessId != element.ProcessId:
+                    break
+
+                parent = parent.GetParentControl()
+                depth += 1
+        except Exception:
+            pass
+
+        info["Ancestors"] = ancestors
+
         return info
+
+    @staticmethod
+    def get_unique_style_classes(pid: int) -> List[str]:
+        """
+        Scans the entire UI tree and returns a unique list of found 'ClassName's.
+        This is useful for identifying valid QSS selectors.
+        """
+        classes = set()
+
+        try:
+            root = auto.GetRootControl()
+            app_window = None
+
+            # Find window for PID
+            for attempt in root.GetChildren():
+                if attempt.ProcessId == pid:
+                    app_window = attempt
+                    classes.add(app_window.ClassName)  # Add root class
+                    break
+
+            if not app_window:
+                return ["Error: Could not find main window."]
+
+            # Recursive scan
+            def walk(control):
+                children = control.GetChildren()
+                for child in children:
+                    if child.ClassName:
+                        classes.add(child.ClassName)
+                    walk(child)
+
+            walk(app_window)
+
+        except Exception as e:
+            return [f"Scan Error: {str(e)}"]
+
+        return sorted(list(classes))
 
     @staticmethod
     def get_extensive_ui_tree(pid: int) -> str:

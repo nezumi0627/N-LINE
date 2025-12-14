@@ -8,6 +8,22 @@
 
 > [Japanese Version Here](README.md)
 
+## 💻 Development
+
+This project uses `rye` for dependency management and `makefile` for task automation.
+
+### Commands
+
+| Command | Description |
+|:---|:---|
+| `make install` | Install dependencies |
+| `make start` | Run the application |
+| `make fmt` | Format code (ruff) |
+| `make check` | Lint check (ruff) |
+| `make fix` | Auto-fix lint errors |
+
+For Windows users without `make`, use `make.bat` (e.g., `.\make start`).
+
 **N-LINE** is a powerful Python-based utility for managing, debugging, and modifying the LINE Desktop application on Windows. It provides a modern GUI dashboard for task management (process killing, cache cleaning) and advanced engineering tools for checking internal UI structures and automating interactions.
 
 ---

@@ -1,10 +1,9 @@
 import customtkinter
-import sys
 import os
 from threading import Thread
 import time
-from core.line_manager import LineManager
-from gui.debug_window import DebugWindow
+from n_line.core.line_manager import LineManager
+from n_line.gui.debug_window import DebugWindow
 
 customtkinter.set_appearance_mode("Dark")
 customtkinter.set_default_color_theme(

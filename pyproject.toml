@@ -1,0 +1,31 @@
+[project]
+name = "n-line"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "nezumi0627" }
+]
+dependencies = [
+    "customtkinter>=5.2.2",
+    "pillow>=12.0.0",
+    "psutil>=7.1.3",
+    "pywin32>=311",
+    "uiautomation>=2.0.29",
+    "keyboard>=0.13.5",
+    "mouse>=0.7.1",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.rye.scripts]
+start = { cmd = "python -m n_line" }
+fmt = { cmd = "rye fmt" }
+check = { cmd = "rye check --fix" }
