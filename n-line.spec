@@ -8,6 +8,11 @@ import sys
 import os
 from pathlib import Path
 
+# WindowsでUTF-8出力を保証するための設定
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 block_cipher = None
 
 # プロジェクトルート（specファイルのディレクトリ）
