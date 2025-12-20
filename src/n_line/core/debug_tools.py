@@ -1,13 +1,31 @@
-import psutil
+"""デバッグツールモジュール
+
+システム情報の取得、プロセス詳細の取得、ディレクトリスキャンなどの
+デバッグ用機能を提供するモジュールです。
+"""
 import os
 import sys
-from typing import Dict, Any, List
+from typing import Any, Dict, List
+
+import psutil
+
 from .line_manager import LineManager
 
 
 class DebugTools:
+    """デバッグ用のユーティリティクラス
+
+    このクラスは静的メソッドのみを提供し、システム情報やプロセス情報の
+    取得、ディレクトリスキャンなどのデバッグ機能を提供します。
+    """
+
     @staticmethod
     def get_system_info() -> Dict[str, str]:
+        """システム情報を取得
+
+        Returns:
+            システム情報を含む辞書
+        """
         info = {
             "OS": os.name,
             "Platform": sys.platform,
@@ -18,6 +36,11 @@ class DebugTools:
 
     @staticmethod
     def get_line_process_details() -> List[Dict[str, Any]]:
+        """LINEプロセスの詳細情報を取得
+
+        Returns:
+            プロセス詳細情報のリスト
+        """
         details = []
         procs = LineManager.get_line_processes()
         for proc in procs:
@@ -39,8 +62,10 @@ class DebugTools:
 
     @staticmethod
     def scan_line_directories() -> Dict[str, List[str]]:
-        """
-        Scans interesting directories for files.
+        """LINE関連のディレクトリをスキャンしてファイル一覧を取得
+
+        Returns:
+            ディレクトリ名をキー、ファイル名のリストを値とする辞書
         """
         paths = {}
 

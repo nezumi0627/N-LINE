@@ -1,15 +1,30 @@
+"""UI要素検査モジュール
+
+UI Automationを使用してアプリケーションのUI要素を検索、分析する
+モジュールです。ウィンドウ構造の取得、要素の詳細情報取得、スタイルクラス
+の抽出などの機能を提供します。
+"""
+import threading
+from typing import Any, Dict, List, Optional
+
+import uiautomation as auto
 import win32gui
 import win32process
-import uiautomation as auto
-from typing import List, Dict, Any, Optional
-import threading
 
 
 class UIInspector:
+    """UI要素の検査と分析を行うクラス
+
+    このクラスは静的メソッドのみを提供し、UI Automation APIを使用して
+    アプリケーションのUI要素を検索・分析します。
+    """
+
     @staticmethod
     def get_element_at_cursor() -> Optional[auto.Control]:
-        """
-        Returns the UI Automation element under the mouse cursor.
+        """マウスカーソル位置のUI要素を取得
+
+        Returns:
+            見つかったControlオブジェクト。見つからない場合はNone
         """
         try:
             x, y = win32gui.GetCursorPos()
@@ -19,9 +34,15 @@ class UIInspector:
             return None
 
     @staticmethod
-    def highlight_element(element: auto.Control, duration: float = 1.0):
-        """
-        Draws a red rectangle around the element for a short duration using a transparent overlay window.
+    def highlight_element(element: auto.Control, duration: float = 1.0) -> None:
+        """要素の周りに赤い矩形を一時的に表示
+
+        透明なオーバーレイウィンドウを使用して、指定された要素の周りに
+        赤い枠を表示します。
+
+        Args:
+            element: ハイライトするUI要素
+            duration: 表示時間（秒）
         """
         try:
             rect = element.BoundingRectangle
@@ -70,8 +91,16 @@ class UIInspector:
 
     @staticmethod
     def get_detailed_info(element: auto.Control) -> Dict[str, Any]:
-        """
-        Extracts detailed properties from a UIA element for editing purposes.
+        """UI要素の詳細情報を取得
+
+        要素の名前、型、クラス名、パターン、祖先要素などの詳細情報を
+        辞書形式で返します。
+
+        Args:
+            element: 情報を取得するUI要素
+
+        Returns:
+            要素の詳細情報を含む辞書
         """
         if not element:
             return {}
@@ -144,9 +173,15 @@ class UIInspector:
 
     @staticmethod
     def get_unique_style_classes(pid: int) -> List[str]:
-        """
-        Scans the entire UI tree and returns a unique list of found 'ClassName's.
-        This is useful for identifying valid QSS selectors.
+        """UIツリー全体をスキャンしてユニークなクラス名のリストを取得
+
+        QSSセレクタの特定に有用です。
+
+        Args:
+            pid: プロセスID
+
+        Returns:
+            見つかったクラス名のリスト
         """
         classes = set()
 
@@ -181,9 +216,16 @@ class UIInspector:
 
     @staticmethod
     def get_extensive_ui_tree(pid: int) -> str:
-        """
-        Uses UI Automation to scan the entire control tree of the application with the given PID.
-        Returns a formatted string representation of the tree.
+        """指定されたPIDのアプリケーションのUIツリー全体をスキャン
+
+        UI Automationを使用してコントロールツリー全体を走査し、
+        フォーマットされた文字列表現を返します。
+
+        Args:
+            pid: プロセスID
+
+        Returns:
+            UIツリーのフォーマットされた文字列表現
         """
         output = []
         try:
@@ -240,8 +282,13 @@ class UIInspector:
 
     @staticmethod
     def get_window_structure(target_pid: int) -> List[Dict[str, Any]]:
-        """
-        Legacy: Retrieves the window structure (hierarchy) for a specific process ID using Win32 API.
+        """Win32 APIを使用してウィンドウ構造（階層）を取得（レガシー）
+
+        Args:
+            target_pid: 対象プロセスID
+
+        Returns:
+            ウィンドウ情報のリスト
         """
         windows = []
 

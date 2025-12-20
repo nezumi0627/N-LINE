@@ -1,10 +1,22 @@
-import customtkinter
+"""Processタブモジュール
+
+LINEプロセスの詳細情報とシステム情報を表示するタブを提供するモジュールです。
+"""
 import datetime
+
+import customtkinter
+
 from n_line.core.debug_tools import DebugTools
 
 
 class ProcessTab(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
+    """Processタブクラス
+
+    LINEプロセスの詳細情報とシステム情報を表示します。
+    """
+
+    def __init__(self, master, **kwargs) -> None:
+        """タブを初期化"""
         super().__init__(master, **kwargs)
 
         self.grid_columnconfigure(0, weight=1)
@@ -23,7 +35,8 @@ class ProcessTab(customtkinter.CTkFrame):
         # Initial Load
         self.refresh_process_info()
 
-    def refresh_process_info(self):
+    def refresh_process_info(self) -> None:
+        """プロセス情報を更新して表示"""
         self.process_textbox.configure(state="normal")
         self.process_textbox.delete("0.0", "end")
 

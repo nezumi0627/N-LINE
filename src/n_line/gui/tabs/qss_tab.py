@@ -1,12 +1,25 @@
-import customtkinter
+"""QSSタブモジュール
+
+Qt Stylesheet（QSS）ファイルの編集とLINEへの適用を行うタブを
+提供するモジュールです。
+"""
 import os
 import shutil
 from tkinter import filedialog
+
+import customtkinter
+
 from n_line.core.line_manager import LineManager
 
 
 class QSSTab(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
+    """QSSタブクラス
+
+    QSSファイルの編集、デプロイ、LINEへの適用を提供します。
+    """
+
+    def __init__(self, master, **kwargs) -> None:
+        """タブを初期化"""
         super().__init__(master, **kwargs)
 
         self.grid_columnconfigure(0, weight=1)
@@ -133,7 +146,8 @@ class QSSTab(customtkinter.CTkFrame):
             self.path_entry.insert(0, os.path.abspath("test_style.qss"))
             self.load_to_editor()
 
-    def browse_file(self):
+    def browse_file(self) -> None:
+        """ファイル選択ダイアログを表示"""
         file_path = filedialog.askopenfilename(
             filetypes=[("QSS Files", "*.qss"), ("All Files", "*.*")]
         )
@@ -142,7 +156,8 @@ class QSSTab(customtkinter.CTkFrame):
             self.path_entry.insert(0, file_path)
             self.load_to_editor()
 
-    def load_to_editor(self):
+    def load_to_editor(self) -> None:
+        """ファイルをエディタに読み込む"""
         path = self.path_entry.get().strip()
         if not path or not os.path.exists(path):
             self.status_label.configure(text="File not found.", text_color="red")
@@ -159,7 +174,8 @@ class QSSTab(customtkinter.CTkFrame):
         except Exception as e:
             self.status_label.configure(text=f"Load Error: {str(e)}", text_color="red")
 
-    def save_editor_content(self):
+    def save_editor_content(self) -> None:
+        """エディタの内容をファイルに保存"""
         path = self.path_entry.get().strip()
         if not path:
             # If no path, ask where to save
@@ -181,8 +197,8 @@ class QSSTab(customtkinter.CTkFrame):
         except Exception as e:
             self.status_label.configure(text=f"Save Error: {str(e)}", text_color="red")
 
-    def deploy_file(self):
-        """Copies the current file to LINE's local appdata folder for easier loading."""
+    def deploy_file(self) -> None:
+        """現在のファイルをLINEのローカルAppDataフォルダにコピー"""
         source_path = self.path_entry.get().strip()
         if not source_path or not os.path.exists(source_path):
             self.status_label.configure(
@@ -217,7 +233,8 @@ class QSSTab(customtkinter.CTkFrame):
                 text=f"Deploy Error: {str(e)}", text_color="red"
             )
 
-    def relaunch_line(self):
+    def relaunch_line(self) -> None:
+        """QSSを適用してLINEを再起動"""
         args_text = self.path_entry.get()
         if not args_text:
             self.status_label.configure(

@@ -1,16 +1,35 @@
-import win32gui
+"""ウィンドウ操作モジュール
+
+Win32 APIを使用してウィンドウの検索、操作（透明度、最前面表示、タイトル変更など）
+を行うモジュールです。
+"""
+from typing import Optional
+
 import win32con
+import win32gui
 import win32process
 
 
 class WindowManipulator:
+    """ウィンドウの検索と操作を行うクラス
+
+    このクラスは静的メソッドのみを提供し、Win32 APIを使用して
+    ウィンドウハンドルを取得し、ウィンドウのプロパティを変更します。
+    """
+
     @staticmethod
     def find_process_window(pid: int) -> int:
-        """
-        Finds the main window for a given PID.
-        We look for a visible window owned by this PID.
-        Prioritizes windows with 'Qt' in class name if possible (for LINE),
-        but generic fallback is finding the largest visible window.
+        """指定されたPIDのメインウィンドウを検索
+
+        PIDに属する可視ウィンドウを列挙し、最大のウィンドウを返します。
+        Qtアプリケーション（LINEなど）の場合は、QWindowIconクラス名を
+        優先的に検索します。
+
+        Args:
+            pid: プロセスID
+
+        Returns:
+            見つかったウィンドウハンドル。見つからない場合は0
         """
         found_hwnd = 0
         max_area = 0
@@ -24,23 +43,19 @@ class WindowManipulator:
             if window_pid != pid:
                 return
 
-            # Check bounds
+            # ウィンドウサイズを取得
             rect = win32gui.GetWindowRect(hwnd)
             w = rect[2] - rect[0]
             h = rect[3] - rect[1]
             area = w * h
 
-            # Simple heuristic: The largest visible window is likely the main one.
-            # Or if we spot the specific Qt class.
             class_name = win32gui.GetClassName(hwnd)
 
-            # If it's definitely the main LINE window structure
+            # LINEのメインウィンドウ構造を優先的に検出
             if "QWindowIcon" in class_name and w > 100:
                 found_hwnd = hwnd
-                # High priority, stop? No, waiting for enum to finish or check others?
-                # Actually, EnumWindow order is Z-order.
-                # Let's just track the largest one that matches criteria, or just largest visible.
 
+            # 最大のウィンドウを記録
             if area > max_area:
                 max_area = area
                 found_hwnd = hwnd
@@ -50,8 +65,13 @@ class WindowManipulator:
 
     @staticmethod
     def find_main_window() -> int:
-        """
-        Legacy: Attempts to find the main LINE window handle by title.
+        """タイトルからLINEのメインウィンドウを検索（レガシー）
+
+        ウィンドウタイトルが「LINE」で、Qtウィンドウクラス名を持つ
+        ウィンドウを検索します。
+
+        Returns:
+            見つかったウィンドウハンドル。見つからない場合は0
         """
         found_hwnd = 0
 
@@ -63,13 +83,13 @@ class WindowManipulator:
             title = win32gui.GetWindowText(hwnd)
             class_name = win32gui.GetClassName(hwnd)
 
-            # Condition: Title is 'LINE' and looks like a Qt Window
+            # 条件: タイトルが「LINE」でQtウィンドウ
             if (
                 title == "LINE"
                 and class_name.startswith("Qt")
                 and "QWindowIcon" in class_name
             ):
-                # Check bounds to avoid 1x1 dummy windows if any
+                # 1x1のダミーウィンドウを避けるためサイズを確認
                 rect = win32gui.GetWindowRect(hwnd)
                 w = rect[2] - rect[0]
                 h = rect[3] - rect[1]
@@ -81,9 +101,16 @@ class WindowManipulator:
         return found_hwnd
 
     @staticmethod
-    def set_always_on_top(hwnd: int, enable: bool):
-        hwnd_insert_after = win32con.HWND_TOPMOST if enable else win32con.HWND_NOTOPMOST
-        # SWP_NOMOVE | SWP_NOSIZE
+    def set_always_on_top(hwnd: int, enable: bool) -> None:
+        """ウィンドウを常に最前面に表示する設定を変更
+
+        Args:
+            hwnd: ウィンドウハンドル
+            enable: Trueの場合は最前面に、Falseの場合は通常表示に
+        """
+        hwnd_insert_after = (
+            win32con.HWND_TOPMOST if enable else win32con.HWND_NOTOPMOST
+        )
         win32gui.SetWindowPos(
             hwnd,
             hwnd_insert_after,
@@ -95,11 +122,14 @@ class WindowManipulator:
         )
 
     @staticmethod
-    def set_opacity(hwnd: int, alpha: int):
+    def set_opacity(hwnd: int, alpha: int) -> None:
+        """ウィンドウの透明度を設定
+
+        Args:
+            hwnd: ウィンドウハンドル
+            alpha: 透明度（0=完全に透明、255=完全不透明）
         """
-        alpha: 0 (transparent) to 255 (opaque)
-        """
-        # Ensure WS_EX_LAYERED is set
+        # WS_EX_LAYEREDスタイルが設定されていることを確認
         ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
         if not (ex_style & win32con.WS_EX_LAYERED):
             win32gui.SetWindowLong(
@@ -109,13 +139,25 @@ class WindowManipulator:
         win32gui.SetLayeredWindowAttributes(hwnd, 0, alpha, win32con.LWA_ALPHA)
 
     @staticmethod
-    def scale_window(hwnd: int, width: int, height: int):
-        # Preserve position, just change size
+    def scale_window(hwnd: int, width: int, height: int) -> None:
+        """ウィンドウのサイズを変更（位置は保持）
+
+        Args:
+            hwnd: ウィンドウハンドル
+            width: 新しい幅
+            height: 新しい高さ
+        """
         rect = win32gui.GetWindowRect(hwnd)
         x = rect[0]
         y = rect[1]
         win32gui.MoveWindow(hwnd, x, y, width, height, True)
 
     @staticmethod
-    def set_title(hwnd: int, text: str):
+    def set_title(hwnd: int, text: str) -> None:
+        """ウィンドウのタイトルを変更
+
+        Args:
+            hwnd: ウィンドウハンドル
+            text: 新しいタイトルテキスト
+        """
         win32gui.SetWindowText(hwnd, text)

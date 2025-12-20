@@ -1,10 +1,24 @@
+"""Modsタブモジュール
+
+ウィンドウのリアルタイム操作（透明度、最前面表示、タイトル変更など）と
+引数インジェクション機能を提供するタブモジュールです。
+"""
+import shlex
+
 import customtkinter
+
 from n_line.core.line_manager import LineManager
 from n_line.core.window_manipulator import WindowManipulator
 
 
 class ModsTab(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
+    """Modsタブクラス
+
+    ウィンドウの操作と引数インジェクション機能を提供します。
+    """
+
+    def __init__(self, master, **kwargs) -> None:
+        """タブを初期化"""
         super().__init__(master, **kwargs)
 
         self.grid_columnconfigure(0, weight=1)
@@ -84,7 +98,8 @@ class ModsTab(customtkinter.CTkFrame):
         )
         self.relaunch_btn.grid(row=7, column=0, padx=20, pady=5)
 
-    def find_window_target(self):
+    def find_window_target(self) -> None:
+        """メインウィンドウを検索してターゲットに設定"""
         # Improved: Find by PID first, which is more robust than title search
         procs = LineManager.get_line_processes()
         hwnd = 0
@@ -107,26 +122,34 @@ class ModsTab(customtkinter.CTkFrame):
                 text="Target: Not Found (Is LINE running?)", text_color="red"
             )
 
-    def change_opacity(self, value):
+    def change_opacity(self, value: float) -> None:
+        """ウィンドウの透明度を変更
+
+        Args:
+            value: 透明度の値（30-255）
+        """
         if self.target_hwnd:
             WindowManipulator.set_opacity(self.target_hwnd, int(value))
             self.opacity_label.configure(text=f"Opacity ({int(value / 2.55)}%)")
 
-    def toggle_topmost(self):
+    def toggle_topmost(self) -> None:
+        """最前面表示のオン/オフを切り替え"""
         if self.target_hwnd:
             WindowManipulator.set_always_on_top(
                 self.target_hwnd, bool(self.topmost_switch.get())
             )
 
-    def set_window_title(self):
+    def set_window_title(self) -> None:
+        """ウィンドウタイトルを変更"""
         if self.target_hwnd:
             new_title = self.title_entry.get()
             if new_title:
                 WindowManipulator.set_title(self.target_hwnd, new_title)
 
-    def inject_arguments(self):
-        """
-        Exploit: Relaunch LINE with custom arguments directly.
+    def inject_arguments(self) -> None:
+        """引数をインジェクションしてLINEを再起動
+
+        カスタム引数でLINEを再起動します。
         """
         args = self.arg_entry.get()
         if not args:
@@ -135,11 +158,7 @@ class ModsTab(customtkinter.CTkFrame):
             )
             return
 
-        import shlex
-
         try:
-            # Basic usage: just pass the raw string if simple, or parse if complex.
-            # LineManager expects a list of args.
             arg_list = shlex.split(args)
 
             self.status_mod_label.configure(

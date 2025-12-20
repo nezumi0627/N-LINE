@@ -1,14 +1,26 @@
+"""デバッグウィンドウモジュール
+
+各種デバッグツールをタブ形式で提供するウィンドウを提供するモジュールです。
+"""
 import customtkinter
-from n_line.gui.tabs.process_tab import ProcessTab
+
+from n_line.gui.tabs.automation_tab import AutomationTab
 from n_line.gui.tabs.files_tab import FilesTab
 from n_line.gui.tabs.inspector_tab import InspectorTab
 from n_line.gui.tabs.mods_tab import ModsTab
-from n_line.gui.tabs.automation_tab import AutomationTab
+from n_line.gui.tabs.process_tab import ProcessTab
 from n_line.gui.tabs.qss_tab import QSSTab
 
 
 class DebugWindow(customtkinter.CTkToplevel):
-    def __init__(self, *args, **kwargs):
+    """デバッグウィンドウクラス
+
+    プロセス情報、ファイル構造、UI Inspector、ウィンドウ操作、
+    QSS編集、自動化などのデバッグツールをタブ形式で提供します。
+    """
+
+    def __init__(self, *args, **kwargs) -> None:
+        """デバッグウィンドウを初期化"""
         super().__init__(*args, **kwargs)
         self.geometry("800x700")
         self.title("N-LINE Debug Tools")
@@ -57,8 +69,11 @@ class DebugWindow(customtkinter.CTkToplevel):
         # Bind close event to cleanup resources (like hotkeys)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-    def on_closing(self):
-        # Notify tabs to cleanup
+    def on_closing(self) -> None:
+        """ウィンドウクローズ時の処理
+
+        タブのリソースをクリーンアップしてからウィンドウを破棄します。
+        """
         if hasattr(self.inspector_content, "cleanup"):
             self.inspector_content.cleanup()
         self.destroy()

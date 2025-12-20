@@ -1,39 +1,37 @@
+.PHONY: help install start fmt check fix test clean build-installer
 
-# Variables
-PYTHON = python
-RYE = rye
-MODULE = n_line
+help:
+	@echo "利用可能なコマンド:"
+	@echo "  make install        - 依存関係のインストール"
+	@echo "  make start          - アプリケーションの起動"
+	@echo "  make fmt            - コードのフォーマット"
+	@echo "  make check          - 静的解析・Lint"
+	@echo "  make fix            - Lintエラーの自動修正"
+	@echo "  make test           - テストの実行"
+	@echo "  make clean          - ビルドファイルのクリーンアップ"
+	@echo "  make build-installer - インストーラーの作成"
 
-.PHONY: all help install dev start fmt check test clean
+install:
+	pip install -r requirements.txt
+	pip install -r requirements-dev.txt
 
-help: ## Show this help message
-	@echo "Usage: make [target]"
-	@echo ""
-	@echo "Targets:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
+start:
+	python -m n_line
 
-install: ## Install dependencies using rye
-	$(RYE) sync
+fmt:
+	ruff format .
 
-dev: ## Install dev dependencies
-	$(RYE) sync --all-features
+check:
+	ruff check .
 
-start: ## Run the application
-	$(RYE) run $(PYTHON) -m $(MODULE)
+fix:
+	ruff check . --fix
 
-fmt: ## Format code using rye (ruff)
-	$(RYE) fmt
+test:
+	pytest
 
-check: ## Check code style and linting errors
-	$(RYE) check
+clean:
+	python scripts/build_installer.py --clean
 
-fix: ## Fix linting errors automatically
-	$(RYE) check --fix
-
-clean: ## Clean up cache and temporary files
-	rm -rf .ruff_cache
-	rm -rf .pytest_cache
-	rm -rf __pycache__
-	rm -rf src/$(MODULE)/__pycache__
-	rm -rf src/$(MODULE)/core/__pycache__
-	rm -rf src/$(MODULE)/gui/__pycache__
+build-installer:
+	python scripts/build_installer.py

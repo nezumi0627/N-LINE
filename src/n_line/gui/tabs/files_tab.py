@@ -1,9 +1,20 @@
+"""Filesタブモジュール
+
+LINE関連のディレクトリとファイル構造を表示するタブを提供するモジュールです。
+"""
 import customtkinter
+
 from n_line.core.debug_tools import DebugTools
 
 
 class FilesTab(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
+    """Filesタブクラス
+
+    LINE関連のディレクトリとファイルをスキャンして表示します。
+    """
+
+    def __init__(self, master, **kwargs) -> None:
+        """タブを初期化"""
         super().__init__(master, **kwargs)
 
         self.grid_columnconfigure(0, weight=1)
@@ -20,7 +31,8 @@ class FilesTab(customtkinter.CTkFrame):
         # Initial Load
         self.scan_files()
 
-    def scan_files(self):
+    def scan_files(self) -> None:
+        """ディレクトリをスキャンしてファイル一覧を表示"""
         self.files_textbox.configure(state="normal")
         self.files_textbox.delete("0.0", "end")
 

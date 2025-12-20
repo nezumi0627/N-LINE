@@ -1,18 +1,34 @@
-import customtkinter
+"""N-LINEメインアプリケーション
+
+N-LINEのメインウィンドウを提供するモジュールです。
+LINEプロセスの起動・終了、キャッシュクリア、デバッグツールの起動などの
+基本機能を提供します。
+"""
 import os
-from threading import Thread
 import time
+from threading import Thread
+from typing import Optional
+
+import customtkinter
+
+from n_line import __version__
 from n_line.core.line_manager import LineManager
+from n_line.core.updater import Updater, UpdateDialog
 from n_line.gui.debug_window import DebugWindow
 
 customtkinter.set_appearance_mode("Dark")
-customtkinter.set_default_color_theme(
-    "blue"
-)  # Themes: "blue" (default), "green", "dark-blue"
+customtkinter.set_default_color_theme("blue")
 
 
 class NLineApp(customtkinter.CTk):
-    def __init__(self):
+    """N-LINEメインアプリケーションクラス
+
+    LINEプロセスの管理とデバッグツールへのアクセスを提供する
+    メインウィンドウです。
+    """
+
+    def __init__(self) -> None:
+        """アプリケーションを初期化"""
         super().__init__()
 
         # Window Setup
@@ -111,24 +127,6 @@ class NLineApp(customtkinter.CTk):
             row=3, column=0, columnspan=2, padx=10, pady=(10, 20), sticky="ew"
         )
 
-        # Future Mods Section
-        self.separator = customtkinter.CTkLabel(
-            self.content_frame,
-            text="--- Modifications (Coming Soon) ---",
-            text_color="gray",
-        )
-        self.separator.grid(row=3, column=0, columnspan=2, pady=10)
-
-        self.theme_btn = customtkinter.CTkButton(
-            self.content_frame,
-            text="Apply Dark N-LINE Theme",
-            state="disabled",
-            fg_color="#2980b9",
-        )
-        self.theme_btn.grid(
-            row=4, column=0, columnspan=2, padx=10, pady=10, sticky="ew"
-        )
-
         # Logger / Console
         self.log_textbox = customtkinter.CTkTextbox(self.content_frame, height=100)
         self.log_textbox.grid(
@@ -137,11 +135,25 @@ class NLineApp(customtkinter.CTk):
         self.log_textbox.insert("0.0", "Welcome to N-LINE Project.\nReady.\n")
         self.log_textbox.configure(state="disabled")
 
-        # Footer
+        # Footer with Update button
+        footer_frame = customtkinter.CTkFrame(self.content_frame)
+        footer_frame.grid(row=8, column=0, columnspan=2, pady=10, sticky="ew")
+        footer_frame.grid_columnconfigure(0, weight=1)
+
         self.footer_label = customtkinter.CTkLabel(
-            self.content_frame, text="N-LINE Manager v0.2.0", text_color="gray"
+            footer_frame, text=f"N-LINE Manager v{__version__}", text_color="gray"
         )
-        self.footer_label.grid(row=8, column=0, pady=10)
+        self.footer_label.grid(row=0, column=0, sticky="w", padx=10)
+
+        self.update_btn = customtkinter.CTkButton(
+            footer_frame,
+            text="更新を確認",
+            command=self.check_for_updates,
+            width=100,
+            height=25,
+            font=customtkinter.CTkFont(size=11),
+        )
+        self.update_btn.grid(row=0, column=1, padx=10, sticky="e")
 
         # Start Monitor Thread
         self.monitor_running = True
@@ -149,13 +161,23 @@ class NLineApp(customtkinter.CTk):
         self.monitor_thread.daemon = True  # Kill when app closes
         self.monitor_thread.start()
 
-    def log(self, message):
+    def log(self, message: str) -> None:
+        """ログメッセージをテキストボックスに追加
+
+        Args:
+            message: ログメッセージ
+        """
         self.log_textbox.configure(state="normal")
         self.log_textbox.insert("end", f"> {message}\n")
         self.log_textbox.configure(state="disabled")
         self.log_textbox.see("end")
 
-    def monitor_status(self):
+    def monitor_status(self) -> None:
+        """LINEプロセスの状態を監視するスレッド関数
+
+        2秒ごとにLINEプロセスの実行状態をチェックし、
+        ステータスラベルを更新します。
+        """
         while self.monitor_running:
             try:
                 is_running = LineManager.is_line_running()
@@ -170,17 +192,20 @@ class NLineApp(customtkinter.CTk):
                 pass
             time.sleep(2)
 
-    def kill_line_action(self):
+    def kill_line_action(self) -> None:
+        """LINEプロセスを終了するアクション"""
         self.log("Attempting to kill LINE process...")
         if LineManager.kill_line():
             self.log("Success: LINE process terminated.")
         else:
             self.log("Info: LINE was not running or could not be killed.")
 
-    def launch_line_action(self):
+    def launch_line_action(self) -> None:
+        """LINEを起動するアクション"""
         self.log(LineManager.launch_line())
 
-    def clear_cache_action(self):
+    def clear_cache_action(self) -> None:
+        """LINEキャッシュをクリアするアクション"""
         self.log("Clearing LINE cache...")
         if LineManager.is_line_running():
             self.log("WARNING: Please close LINE before clearing cache.")
@@ -189,7 +214,8 @@ class NLineApp(customtkinter.CTk):
         result = LineManager.clear_cache()
         self.log(result)
 
-    def open_folder_action(self):
+    def open_folder_action(self) -> None:
+        """LINEインストールフォルダを開くアクション"""
         path = LineManager.get_install_path()
         if path and os.path.exists(path):
             self.log(f"Opening folder: {path}")
@@ -197,7 +223,12 @@ class NLineApp(customtkinter.CTk):
         else:
             self.log("Error: Could not find LINE installation folder.")
 
-    def open_debug_window(self):
+    def open_debug_window(self) -> None:
+        """デバッグウィンドウを開く
+
+        既に開いている場合はフォーカスを当て、
+        開いていない場合は新しく作成します。
+        """
         if (
             hasattr(self, "debug_window")
             and self.debug_window is not None
@@ -208,7 +239,18 @@ class NLineApp(customtkinter.CTk):
             self.debug_window = DebugWindow(self)
             self.debug_window.focus()
 
-    def on_closing(self):
+    def check_for_updates(self) -> None:
+        """アップデートを確認"""
+        updater = Updater(__version__)
+        if not hasattr(self, "update_dialog") or not self.update_dialog.winfo_exists():
+            self.update_dialog = UpdateDialog(self, updater)
+            self.update_dialog.focus()
+
+    def on_closing(self) -> None:
+        """ウィンドウクローズ時の処理
+
+        監視スレッドを停止してからウィンドウを破棄します。
+        """
         self.monitor_running = False
         self.destroy()
 

@@ -1,13 +1,28 @@
-import customtkinter
-import threading
-import keyboard
+"""UI Inspectorタブモジュール
+
+UI要素の検査と分析を行うタブを提供するモジュールです。
+ウィンドウ構造のスキャン、ポイントインスペクト機能、スタイルクラスの抽出
+などの機能を提供します。
+"""
 import datetime
-from n_line.core.ui_inspector import UIInspector
+import threading
+from typing import Any, Dict, List
+
+import customtkinter
+import keyboard
+
 from n_line.core.line_manager import LineManager
+from n_line.core.ui_inspector import UIInspector
 
 
 class InspectorTab(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
+    """UI Inspectorタブクラス
+
+    UI要素の検査と分析を行うタブです。
+    """
+
+    def __init__(self, master, **kwargs) -> None:
+        """タブを初期化"""
         super().__init__(master, **kwargs)
 
         self.grid_columnconfigure(0, weight=1)
@@ -67,7 +82,8 @@ class InspectorTab(customtkinter.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
-    def inspect_ui(self):
+    def inspect_ui(self) -> None:
+        """トップレベルのウィンドウをスキャンして表示"""
         self.ui_textbox.configure(state="normal")
         self.ui_textbox.delete("0.0", "end")
 
@@ -103,7 +119,8 @@ class InspectorTab(customtkinter.CTkFrame):
         self.ui_textbox.insert("end", report)
         self.ui_textbox.configure(state="disabled")
 
-    def toggle_inspector_mode(self):
+    def toggle_inspector_mode(self) -> None:
+        """インスペクターモードのオン/オフを切り替え"""
         if self.inspector_switch.get():
             self.inspector_status.configure(
                 text="ON (Monitoring 'ctrl+shift')", text_color="green"
@@ -116,15 +133,21 @@ class InspectorTab(customtkinter.CTkFrame):
             except Exception:
                 pass
 
-    def on_inspector_hotkey(self):
-        # Run inspection in a separate thread to avoid freezing key hook
-        # Simple throttling: check if we are already inspecting or just spamming
+    def on_inspector_hotkey(self) -> None:
+        """インスペクターホットキー（Ctrl+Shift）が押されたときの処理
+
+        キーフックのフリーズを避けるため、別スレッドで実行します。
+        """
         if hasattr(self, "_inspecting") and self._inspecting:
             return
         self._inspecting = True
         threading.Thread(target=self._run_point_inspection).start()
 
-    def _run_point_inspection(self):
+    def _run_point_inspection(self) -> None:
+        """ポイントインスペクションを実行
+
+        カーソル位置の要素を取得し、詳細情報を表示します。
+        """
         import uiautomation as auto
 
         try:
@@ -174,15 +197,21 @@ class InspectorTab(customtkinter.CTkFrame):
         finally:
             self._inspecting = False
 
-    def _update_ui_textbox(self, text):
+    def _update_ui_textbox(self, text: str) -> None:
+        """UIテキストボックスを更新
+
+        Args:
+            text: 追加するテキスト
+        """
         self.ui_textbox.configure(state="normal")
         self.ui_textbox.insert("end", text)
         self.ui_textbox.see("end")
         self.ui_textbox.configure(state="disabled")
 
-    def inspect_deep_ui(self):
-        """
-        Performs a deep scan using UI Automation to find internal controls.
+    def inspect_deep_ui(self) -> None:
+        """UI Automationを使用した深いスキャンを実行
+
+        内部コントロールを検索するため、時間がかかります。
         """
         self.ui_textbox.configure(state="normal")
         self.ui_textbox.delete("0.0", "end")
@@ -208,10 +237,8 @@ class InspectorTab(customtkinter.CTkFrame):
         self.ui_textbox.insert("end", report)
         self.ui_textbox.configure(state="disabled")
 
-    def extract_style_classes(self):
-        """
-        Scans LINE UI tree and extracts unique ClassNames for QSS styling.
-        """
+    def extract_style_classes(self) -> None:
+        """LINE UIツリーをスキャンしてQSSスタイリング用のクラス名を抽出"""
         self.ui_textbox.configure(state="normal")
         self.ui_textbox.delete("0.0", "end")
         self.ui_textbox.insert("end", "Scanning for potential QSS classes... wait...\n")
@@ -244,18 +271,36 @@ class InspectorTab(customtkinter.CTkFrame):
         self.ui_textbox.insert("end", report)
         self.ui_textbox.configure(state="disabled")
 
-    def _format_windows(self, windows, depth):
+    def _format_windows(
+        self, windows: List[Dict[str, Any]], depth: int
+    ) -> str:
+        """ウィンドウ情報をフォーマットして文字列に変換
+
+        Args:
+            windows: ウィンドウ情報のリスト
+            depth: 階層の深さ
+
+        Returns:
+            フォーマットされた文字列
+        """
         output = ""
         indent = "  " * depth
         for win in windows:
             vis = "[Visible]" if win["visible"] else "[Hidden]"
             title = win["title"] if win["title"] else "<No Title>"
-            output += f"{indent}{vis} '{title}' (Class: {win['class']}, Size: {win['size']})\n"
+            output += (
+                f"{indent}{vis} '{title}' "
+                f"(Class: {win['class']}, Size: {win['size']})\n"
+            )
             if win["children"]:
                 output += self._format_windows(win["children"], depth + 1)
         return output
 
-    def cleanup(self):
+    def cleanup(self) -> None:
+        """リソースをクリーンアップ
+
+        ホットキーを削除します。
+        """
         try:
             keyboard.remove_hotkey("ctrl+shift")
         except Exception:

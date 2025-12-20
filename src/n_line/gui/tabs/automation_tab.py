@@ -1,9 +1,21 @@
+"""Automationタブモジュール
+
+UI Automationを使用したLINEアプリケーションの自動操作を行うタブを
+提供するモジュールです。
+"""
 import customtkinter
+
 from n_line.core.automation_manager import AutomationManager
 
 
 class AutomationTab(customtkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
+    """Automationタブクラス
+
+    実験的な自動化機能を提供するタブです。
+    """
+
+    def __init__(self, master, **kwargs) -> None:
+        """タブを初期化"""
         super().__init__(master, **kwargs)
 
         self.grid_columnconfigure(0, weight=1)
@@ -42,7 +54,8 @@ class AutomationTab(customtkinter.CTkFrame):
         )
         self.send_key_btn.grid(row=4, column=0, padx=20, pady=20)
 
-    def send_automation_text(self):
+    def send_automation_text(self) -> None:
+        """チャット入力欄にテキストを送信"""
         text = self.auto_entry.get()
         if not text:
             self.auto_status_label.configure(
@@ -54,7 +67,8 @@ class AutomationTab(customtkinter.CTkFrame):
         color = "green" if "Success" in result else "red"
         self.auto_status_label.configure(text=result, text_color=color)
 
-    def send_enter_key(self):
+    def send_enter_key(self) -> None:
+        """Enterキーを送信してメッセージを送信"""
         result = AutomationManager.press_send()
         color = "green" if "Success" in result else "red"
         self.auto_status_label.configure(text=result, text_color=color)
