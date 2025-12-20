@@ -18,28 +18,26 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
-      - name: Extract version from tag
-        id: version
+
+      - name: Install dependencies
         run: |
-          $tag = "${{ github.ref_name }}"
-          $version = $tag -replace '^v', ''
-          echo "version=$version" >> $env:GITHUB_OUTPUT
-      
-      - name: Update version in pyproject.toml
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build Installer
+        shell: pwsh
         run: |
-          $version = "${{ steps.version.outputs.version }}"
-          (Get-Content pyproject.toml) -replace 'version = ".*"', "version = `"$version`"" | Set-Content pyproject.toml
-      
-      - name: Generate CHANGELOG
-        id: changelog
-        run: |
-          python scripts/generate_changelog.py
-      
+          python scripts/build_installer.py
+        env:
+          PROJECT_ROOT: ${{ github.workspace }}
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           body_path: CHANGELOG.md
+          files: |
+            installer/*.exe
           draft: false
           prerelease: false
         env:
