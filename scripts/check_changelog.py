@@ -1,10 +1,17 @@
 """CHANGELOG.mdが更新されているかチェックするスクリプト"""
+
 import re
 import subprocess
 import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parent.parent
+
+# WindowsでUTF-8出力を保証するための設定
+if sys.platform == "win32":
+    import io
+
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 
 def get_changed_files() -> list[str]:
@@ -17,7 +24,7 @@ def get_changed_files() -> list[str]:
             check=False,
         )
         files = [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
-        
+
         # マージベースがない場合、HEADと比較
         if not files:
             result = subprocess.run(
@@ -27,7 +34,7 @@ def get_changed_files() -> list[str]:
                 check=False,
             )
             files = [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
-        
+
         return files
     except subprocess.CalledProcessError:
         return []
@@ -36,21 +43,21 @@ def get_changed_files() -> list[str]:
 def has_code_changes() -> bool:
     """コードに変更があるかチェック"""
     changed_files = get_changed_files()
-    
+
     # コードファイルのパターン
     code_patterns = [
         r"\.py$",
         r"\.toml$",
         r"\.txt$",
     ]
-    
+
     for file in changed_files:
         for pattern in code_patterns:
             if re.search(pattern, file):
                 # CHANGELOG.mdやドキュメントの変更は除外
                 if "CHANGELOG.md" not in file and "docs/" not in file:
                     return True
-    
+
     return False
 
 
@@ -65,7 +72,7 @@ def main():
     if not has_code_changes():
         print("コードに変更がないため、CHANGELOGのチェックをスキップします")
         sys.exit(0)
-    
+
     if changelog_updated():
         print("✓ CHANGELOG.mdが更新されています")
         sys.exit(0)
@@ -77,4 +84,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
